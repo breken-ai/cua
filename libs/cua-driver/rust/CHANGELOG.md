@@ -6,6 +6,13 @@
 
 * **cua-driver:** deliver X11 key-down before the tap delay and finish background keyboard delivery before closing the input connection.
 
+## [0.28.2](https://github.com/trycua/cua/compare/cua-driver-rs-v0.28.1...cua-driver-rs-v0.28.2) (2026-09-13)
+
+
+### Bug Fixes
+
+* **cua-driver:** preserve semantic Hyprland AX scrolling ([#3820](https://github.com/trycua/cua/issues/3820)) ([72b8707](https://github.com/trycua/cua/commit/72b8707cfbdfa3cec5b3f563acdd62ac42aee266)), closes [#3819](https://github.com/trycua/cua/issues/3819)
+
 ## [0.28.1](https://github.com/trycua/cua/compare/cua-driver-rs-v0.28.0...cua-driver-rs-v0.28.1) (2026-09-12)
 
 
