@@ -594,7 +594,7 @@ class GenericVlmConfig(AsyncAgentConfig):
         content_text = ((choice.get("message") or {}).get("content")) or ""
         tool_call = _parse_tool_call_from_text(content_text) or {}
         args = tool_call.get("arguments") or {}
-        args = await _unnormalize_coordinate(args, (rh, rw))
+        args = await _unnormalize_coordinate(args, (rw, rh))
         coord = args.get("coordinate")
         if isinstance(coord, (list, tuple)) and len(coord) >= 2:
             return int(coord[0]), int(coord[1])
