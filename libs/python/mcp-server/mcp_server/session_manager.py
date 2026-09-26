@@ -211,8 +211,13 @@ class SessionManager:
         """Unregister a task from a session."""
         async with self._session_lock:
             if session_id in self._sessions:
-                self._sessions[session_id].active_tasks.discard(task_id)
+                session = self._sessions[session_id]
+                session.active_tasks.discard(task_id)
                 logger.debug(f"Unregistered task {task_id} from session {session_id}")
+
+                # Finish a cleanup that cleanup_session deferred for active tasks
+                if session.is_shutting_down and not session.active_tasks:
+                    await self._remove_session_locked(session_id)
 
     async def cleanup_session(self, session_id: str) -> None:
         """Cleanup a specific session."""

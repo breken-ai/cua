@@ -37,3 +37,15 @@ async def test_cleanup_session_defers_while_tasks_are_active():
 
     assert manager._sessions["s1"].is_shutting_down
     assert computer not in manager._computer_pool._available
+
+
+@pytest.mark.asyncio
+async def test_deferred_cleanup_finishes_when_last_task_ends():
+    manager, computer = await _manager_with_session("s1")
+    await manager.register_task("s1", "task-1")
+    await manager.cleanup_session("s1")
+
+    await asyncio.wait_for(manager.unregister_task("s1", "task-1"), timeout=2)
+
+    assert "s1" not in manager._sessions
+    assert computer in manager._computer_pool._available
