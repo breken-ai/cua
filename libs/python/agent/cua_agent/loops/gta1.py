@@ -28,13 +28,13 @@ Output the coordinate pair exactly:
 """.strip()
 
 
-def extract_coordinates(raw_string: str) -> Tuple[float, float]:
+def extract_coordinates(raw_string: str) -> Optional[Tuple[float, float]]:
     """Extract coordinates from model output."""
     try:
         matches = re.findall(r"\((-?\d*\.?\d+),\s*(-?\d*\.?\d+)\)", raw_string)
         return tuple(map(float, matches[0]))  # type: ignore
     except:
-        return (0.0, 0.0)
+        return None
 
 
 def smart_resize(
@@ -164,7 +164,10 @@ class GTA1Config(AsyncAgentConfig):
         output_text = response.choices[0].message.content  # type: ignore
 
         # Extract and rescale coordinates
-        pred_x, pred_y = extract_coordinates(output_text)  # type: ignore
+        coords = extract_coordinates(output_text)  # type: ignore
+        if coords is None:
+            return None
+        pred_x, pred_y = coords
         pred_x *= scale_x
         pred_y *= scale_y
 

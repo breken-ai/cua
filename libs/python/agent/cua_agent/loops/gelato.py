@@ -38,7 +38,7 @@ def extract_coordinates(raw_string):
         matches = re.findall(r"\((-?\d*\.?\d+),\s*(-?\d*\.?\d+)\)", raw_string)
         return [tuple(map(int, match)) for match in matches][0]
     except:
-        return 0, 0
+        return None
 
 
 def smart_resize(
@@ -172,7 +172,10 @@ class GelatoConfig(AsyncAgentConfig):
         output_text = response.choices[0].message.content  # type: ignore
 
         # Extract and rescale coordinates
-        pred_x, pred_y = extract_coordinates(output_text)  # type: ignore
+        coords = extract_coordinates(output_text)  # type: ignore
+        if coords is None:
+            return None
+        pred_x, pred_y = coords
         pred_x *= scale_x
         pred_y *= scale_y
 

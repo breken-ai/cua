@@ -23,11 +23,11 @@ from ..types import AgentCapability, AgentResponse, Messages, Tools
 SYSTEM_PROMPT = """You are a GUI agent. You are given a task and your action history, with screenshots. You need to perform the next action to complete the task.\n\n## Output Format\nReturn a json object with a reasoning process in  tags, a function name and arguments within  XML tags:\n```\n\n...\n\n\n{"name": "grounding", "arguments": }\n\n```\n represents the following item of the action space:\n## Action Space{"action": "click", "coordinate": [x, y]}\nYour task is to accurately locate a UI element based on the instruction. You should first analyze instruction in  tags and finally output the function in  tags.\n"""
 
 
-def parse_coordinates(raw_string: str) -> tuple[int, int]:
+def parse_coordinates(raw_string: str) -> Optional[tuple[int, int]]:
     matches = re.findall(r"\[(\d+),\s*(\d+)\]", raw_string)
     if matches:
         return tuple(map(int, matches[0]))
-    return -1, -1
+    return None
 
 
 def smart_resize(
@@ -164,7 +164,10 @@ class UIInsConfig(AsyncAgentConfig):
         output_text = response.choices[0].message.content  # type: ignore
 
         # Extract and rescale coordinates
-        pred_x, pred_y = parse_coordinates(output_text)  # type: ignore
+        coords = parse_coordinates(output_text)  # type: ignore
+        if coords is None:
+            return None
+        pred_x, pred_y = coords
         pred_x *= scale_x
         pred_y *= scale_y
 
