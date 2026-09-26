@@ -16,6 +16,7 @@ from cua_sandbox.transport.computer_server import (
     decode_screenshot_response,
     normalize_screen_size,
     parse_command_response,
+    scroll_commands,
 )
 
 logger = logging.getLogger(__name__)
@@ -118,6 +119,10 @@ class HTTPTransport(Transport):
     _parse_sse = staticmethod(parse_command_response)
 
     async def send(self, action: str, **params: Any) -> Any:
+        if action == "scroll":
+            for command, command_params in scroll_commands(params):
+                result = await self._cmd(command, command_params)
+            return result.get("result", result)
         result = await self._cmd(action, params if params else None)
         return result.get("result", result)
 
