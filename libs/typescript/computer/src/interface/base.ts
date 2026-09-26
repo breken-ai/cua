@@ -262,6 +262,7 @@ export abstract class BaseComputerInterface {
         }
 
         return new Promise<{ [key: string]: unknown }>((innerResolve, innerReject) => {
+          const ws = this.ws;
           const messageHandler = (data: WebSocket.RawData) => {
             try {
               const response = JSON.parse(data.toString());
@@ -273,10 +274,18 @@ export abstract class BaseComputerInterface {
             } catch (error) {
               innerReject(error);
             }
-            this.ws.off('message', messageHandler);
+            ws.off('message', messageHandler);
+            ws.off('close', closeHandler);
+          };
+          // Without this, a socket that closes before replying leaves the
+          // command pending forever and blocks every later command.
+          const closeHandler = () => {
+            ws.off('message', messageHandler);
+            innerReject(new Error(`WebSocket closed before a response to ${command}`));
           };
 
-          this.ws.on('message', messageHandler);
+          ws.on('message', messageHandler);
+          ws.on('close', closeHandler);
           const wsCommand = { command, params };
           this.ws.send(JSON.stringify(wsCommand));
         });
