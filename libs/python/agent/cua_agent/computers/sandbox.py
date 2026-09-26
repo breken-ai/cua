@@ -108,7 +108,13 @@ class SandboxComputerHandler(AsyncComputerHandler):
             path = [{"x": start_x, "y": start_y}, {"x": end_x, "y": end_y}]
         if not path:
             return
-        await self._sandbox.mouse.drag(path)
+        # Mouse.drag() only takes a start and an end point, so press, move
+        # through every point, and release (as cua_sandbox's own adapter does).
+        mouse = self._sandbox.mouse
+        await mouse.mouse_down(path[0]["x"], path[0]["y"], button="left")
+        for point in path[1:]:
+            await mouse.move(point["x"], point["y"])
+        await mouse.mouse_up(path[-1]["x"], path[-1]["y"], button="left")
 
     async def get_current_url(self) -> str:
         return ""
