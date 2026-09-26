@@ -216,7 +216,8 @@ class DockerRuntime(Runtime):
                         "printf '#!/bin/sh\\n' | sudo tee /etc/profile.d/cua-env.sh > /dev/null"
                     )
                     for k, v in env_items:
-                        quoted_v = _shlex.quote(v)
+                        # Quote once for the file (it is sourced) and once for this command
+                        quoted_v = _shlex.quote(_shlex.quote(v))
                         await executor.run_command(
                             f"printf 'export {k}=%s\\n' {quoted_v} "
                             f"| sudo tee -a /etc/profile.d/cua-env.sh > /dev/null"

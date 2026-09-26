@@ -312,7 +312,7 @@ async def _apply_env(executor, image: Image) -> None:
     )
     for key, value in image._env:
         await executor.run_command(
-            f"printf 'export {key}=%s\\n' {shlex.quote(value)} "
+            f"printf 'export {key}=%s\\n' {shlex.quote(shlex.quote(value))} "
             f"| {sudo} tee -a /etc/profile.d/cua-env.sh > /dev/null"
         )
 
