@@ -172,7 +172,7 @@ def serve() -> FastMCP:
                     aggregated_messages: List[str] = []
                     async for result in agent.run(messages):
                         logger.info("Agent processing step")
-                        ctx.info("Agent processing step")
+                        await ctx.info("Agent processing step")
 
                         outputs = result.get("output", [])
                         for output in outputs:
@@ -233,7 +233,7 @@ def serve() -> FastMCP:
                                     )
 
                     logger.info("Cua task completed successfully")
-                    ctx.info("Cua task completed successfully")
+                    await ctx.info("Cua task completed successfully")
 
                     screenshot_image = Image(
                         format="png",
@@ -253,7 +253,7 @@ def serve() -> FastMCP:
         except Exception as e:
             error_msg = f"Error running Cua task: {str(e)}\n{traceback.format_exc()}"
             logger.error(error_msg)
-            ctx.error(error_msg)
+            await ctx.error(error_msg)
 
             # Try to get a screenshot from the session if available
             try:
@@ -287,7 +287,7 @@ def serve() -> FastMCP:
         """
         total_tasks = len(tasks)
         if total_tasks == 0:
-            ctx.report_progress(1.0)
+            await ctx.report_progress(1.0)
             return []
 
         session_manager = get_session_manager()
@@ -295,15 +295,15 @@ def serve() -> FastMCP:
         if concurrent and total_tasks > 1:
             # Run tasks concurrently
             logger.info(f"Running {total_tasks} tasks concurrently")
-            ctx.info(f"Running {total_tasks} tasks concurrently")
+            await ctx.info(f"Running {total_tasks} tasks concurrently")
 
             # Create tasks with progress tracking
             async def run_task_with_progress(
                 task_index: int, task: str
             ) -> Tuple[int, Tuple[str, Image]]:
-                ctx.report_progress(task_index / total_tasks)
+                await ctx.report_progress(task_index / total_tasks)
                 result = await run_cua_task(ctx, task, session_id)
-                ctx.report_progress((task_index + 1) / total_tasks)
+                await ctx.report_progress((task_index + 1) / total_tasks)
                 return task_index, result
 
             # Create all task coroutines
@@ -317,7 +317,7 @@ def serve() -> FastMCP:
             for result in results_with_indices:
                 if isinstance(result, Exception):
                     logger.error(f"Task failed with exception: {result}")
-                    ctx.error(f"Task failed: {str(result)}")
+                    await ctx.error(f"Task failed: {str(result)}")
                     results.append((f"Task failed: {str(result)}", Image(format="png", data=b"")))
                 else:
                     _, task_result = result
@@ -327,17 +327,17 @@ def serve() -> FastMCP:
         else:
             # Run tasks sequentially (original behavior)
             logger.info(f"Running {total_tasks} tasks sequentially")
-            ctx.info(f"Running {total_tasks} tasks sequentially")
+            await ctx.info(f"Running {total_tasks} tasks sequentially")
 
             results: List[Tuple[str, Image]] = []
             for i, task in enumerate(tasks):
                 logger.info(f"Running task {i+1}/{total_tasks}: {task}")
-                ctx.info(f"Running task {i+1}/{total_tasks}: {task}")
+                await ctx.info(f"Running task {i+1}/{total_tasks}: {task}")
 
-                ctx.report_progress(i / total_tasks)
+                await ctx.report_progress(i / total_tasks)
                 task_result = await run_cua_task(ctx, task, session_id)
                 results.append(task_result)
-                ctx.report_progress((i + 1) / total_tasks)
+                await ctx.report_progress((i + 1) / total_tasks)
 
             return results
 
